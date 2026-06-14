@@ -541,6 +541,8 @@ version = "0.1.0"
 dependencies = [
  "image",
  "image_hasher",
+ "serde",
+ "serde_json",
  "worker",
 ]
 
