@@ -64,6 +64,12 @@ print("Similar:", is_similar(hash_a, hash_b, max_distance=3))
 ## Development
 
 ```sh
+# Install pre-commit hooks
+uvx prek install -f
+
+# Run pre-commit hooks manually
+uvx prek run --all-files
+
 # Build and deploy
 npx wrangler deploy
 
