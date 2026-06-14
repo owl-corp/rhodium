@@ -1,0 +1,19 @@
+[package]
+name = "rhodium"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+worker = "0.8.5"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+image_hasher = { version = "3.1.1", default-features = false }
+
+[profile.release]
+lto = true
+strip = "none"
+codegen-units = 1
+opt-level = "z"
+panic = "abort"
