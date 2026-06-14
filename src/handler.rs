@@ -1,6 +1,7 @@
 use worker::{Context, Env, Fetch, Headers, Method, Request, Response, Result, Url};
 
 const MAX_IMAGE_BYTES: u64 = 20 * 1024 * 1024; // 20 MiB
+const HEX: &[u8; 16] = b"0123456789abcdef";
 
 pub async fn handle(mut req: Request, env: Env, _ctx: Context) -> Result<Response> {
     if !matches!(req.method(), Method::Post) {
@@ -21,7 +22,7 @@ pub async fn handle(mut req: Request, env: Env, _ctx: Context) -> Result<Respons
     let bytes = fetch_image_bytes(&url).await?;
     let (hex, signed) = compute_phash(&bytes)?;
 
-    let body = format!(r#"{{"hex":"{}","i64":{}}}"#, hex, signed);
+    let body = format!(r#"{{"hex":"{hex}","i64":{signed}}}"#);
 
     let headers = Headers::new();
     headers.set("Content-Type", "application/json")?;
@@ -64,7 +65,11 @@ fn compute_phash(bytes: &[u8]) -> Result<(String, i64)> {
 
     let hash = crate::phash::phash(&img);
 
-    let hex = hash.iter().map(|b| format!("{:02x}", b)).collect();
+    let mut hex = String::with_capacity(hash.len() * 2);
+    for &b in &hash {
+        hex.push(char::from(HEX[usize::from(b >> 4)]));
+        hex.push(char::from(HEX[usize::from(b & 0x0f)]));
+    }
     let signed = i64::from_be_bytes(hash);
 
     Ok((hex, signed))

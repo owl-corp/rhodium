@@ -1,7 +1,7 @@
-use image::DynamicImage;
-use image::ImageReader;
-use image_hasher::{HashAlg, HasherConfig};
 use std::io::Cursor;
+
+use image::{DynamicImage, ImageReader};
+use image_hasher::{HashAlg, HasherConfig};
 
 pub fn decode_image(bytes: &[u8]) -> Option<DynamicImage> {
     ImageReader::new(Cursor::new(bytes))
