@@ -8,6 +8,18 @@ A Cloudflare Worker that accepts an image URL and returns a [perceptual hash](ht
 
 **Request**
 
+JSON request:
+
+```
+POST /
+Authorization: Bearer <your-api-key>
+Content-Type: application/json
+
+{"url":"https://example.com/image.jpg"}
+```
+
+Non-JSON requests are also accepted. If `Content-Type` is not `application/json`, the raw request body is used as the `url` value:
+
 ```
 POST /
 Authorization: Bearer <your-api-key>
@@ -15,6 +27,8 @@ Content-Type: text/plain
 
 https://example.com/image.jpg
 ```
+
+For JSON payloads, unknown keys are ignored and only `url` is used.
 
 **Response**
 
@@ -24,6 +38,15 @@ https://example.com/image.jpg
 
 - `hex`: the 64-bit perceptual hash as a hex string
 - `i64`: the same hash as a signed 64-bit integer (handy for database storage)
+
+**Error response**
+
+```json
+{ "error": "...", "extra": { "...": "..." } }
+```
+
+- `error`: human-readable error message
+- `extra`: optional map for additional error context; omitted when empty
 
 **Python example**
 
@@ -45,8 +68,11 @@ def is_similar(hash_a: int, hash_b: int, max_distance: int = 3) -> bool:
 def fetch_phash(image_url: str) -> int:
     response = requests.post(
         API_URL,
-        headers={"Authorization": f"Bearer {API_KEY}"},
-        data=image_url,
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={"url": image_url},
     )
     response.raise_for_status()
     return response.json()["i64"]
