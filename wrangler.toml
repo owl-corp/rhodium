@@ -1,0 +1,28 @@
+name = "rhodium"
+main = "build/worker/shim.mjs"
+compatibility_date = "2026-06-14"
+
+[build]
+command = "cargo install -q worker-build@0.8.5 --locked && worker-build --release"
+
+[limits]
+cpu_ms = 30000
+
+[[kv_namespaces]]
+binding = "rhodium_auth_kv"
+id = "47c25a7841234b08a207ea8c58d0605d"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
