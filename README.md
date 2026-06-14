@@ -25,6 +25,41 @@ https://example.com/image.jpg
 - `hex`: the 64-bit perceptual hash as a hex string
 - `i64`: the same hash as a signed 64-bit integer (handy for database storage)
 
+**Python example**
+
+```python
+import requests
+
+API_URL = "https://worker-host.dev/"
+API_KEY = "your-api-key"
+
+
+def hamming_distance(a: int, b: int) -> int:
+    return bin(a ^ b).count("1")
+
+
+def is_similar(hash_a: int, hash_b: int, max_distance: int = 3) -> bool:
+    return hamming_distance(hash_a, hash_b) <= max_distance
+
+
+def fetch_phash(image_url: str) -> int:
+    response = requests.post(
+        API_URL,
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        data=image_url,
+    )
+    response.raise_for_status()
+    return response.json()["i64"]
+
+
+hash_a = fetch_phash("https://example.com/image-a.jpg")
+hash_b = fetch_phash("https://example.com/image-b.jpg")
+
+print("A:", hash_a)
+print("B:", hash_b)
+print("Similar:", is_similar(hash_a, hash_b, max_distance=3))
+```
+
 
 ## Development
 
