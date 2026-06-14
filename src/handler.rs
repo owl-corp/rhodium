@@ -1,33 +1,61 @@
-use worker::{Context, Env, Fetch, Headers, Method, Request, Response, Result, Url};
+use worker::{Context, Env, Fetch, Method, Request, Response, Result, Url};
 
 const MAX_IMAGE_BYTES: u64 = 20 * 1024 * 1024; // 20 MiB
 const HEX: &[u8; 16] = b"0123456789abcdef";
 
 pub async fn handle(mut req: Request, env: Env, _ctx: Context) -> Result<Response> {
+    if req.path() != "/" {
+        return Response::error("Not Found", 404);
+    }
+
     if !matches!(req.method(), Method::Post) {
-        return Response::error("Method Not Allowed", 405);
+        return json_error(405, "Method Not Allowed");
     }
 
     if !crate::auth::is_authorized(&req, &env)? {
-        return Response::error("Unauthorized", 401);
+        return json_error(401, "Unauthorized");
     }
 
-    let url = req.text().await?;
-    let url = url.trim().to_string();
+    let hash_request = match parse_hash_request(&mut req).await {
+        Ok(hash_request) => hash_request,
+        Err(err) => return json_error(400, &format!("Bad Request: {err}")),
+    };
+    let url = hash_request.url.trim().to_string();
 
     if url.is_empty() {
-        return Response::error("Bad Request: empty URL", 400);
+        return json_error(400, "no URL or body provided");
     }
 
     let bytes = fetch_image_bytes(&url).await?;
     let (hex, signed) = compute_phash(&bytes)?;
+    let response = crate::models::HashResponse { hex, i64: signed };
 
-    let body = format!(r#"{{"hex":"{hex}","i64":{signed}}}"#);
+    Response::from_json(&response)
+}
 
-    let headers = Headers::new();
-    headers.set("Content-Type", "application/json")?;
+async fn parse_hash_request(req: &mut Request) -> Result<crate::models::HashRequest> {
+    let content_type = req
+        .headers()
+        .get("content-type")?
+        .unwrap_or_default()
+        .to_ascii_lowercase();
 
-    Ok(Response::ok(body)?.with_headers(headers))
+    if content_type.starts_with("application/json") {
+        return req.json::<crate::models::HashRequest>().await;
+    }
+
+    let body = req.text().await?;
+    Ok(crate::models::HashRequest { url: body })
+}
+
+fn json_error(status: u16, message: &str) -> Result<Response> {
+    let body = crate::models::ErrorResponse {
+        error: message.to_string(),
+        extra: None,
+    };
+
+    let resp = Response::from_json(&body)?;
+    Ok(resp.with_status(status))
 }
 
 async fn fetch_image_bytes(url: &str) -> Result<Vec<u8>> {
