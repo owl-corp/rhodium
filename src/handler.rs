@@ -36,8 +36,8 @@ async fn fetch_image_bytes(url: &str) -> Result<Vec<u8>> {
     let rewritten = url.replace("media.discordapp.net", "cdn.discordapp.com");
     let target = rewritten.as_str();
 
-    let parsed: Url = target
-        .parse()
+    let parsed = target
+        .parse::<Url>()
         .map_err(|_| worker::Error::RustError("Invalid URL".into()))?;
 
     let mut image_response = Fetch::Url(parsed).send().await?;
