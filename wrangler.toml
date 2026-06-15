@@ -8,10 +8,6 @@ command = "cargo install -q worker-build@0.8.5 --locked && worker-build --releas
 [limits]
 cpu_ms = 30000
 
-[[kv_namespaces]]
-binding = "rhodium_auth_kv"
-id = "47c25a7841234b08a207ea8c58d0605d"
-
 [observability]
 enabled = false
 head_sampling_rate = 1

@@ -8,7 +8,7 @@ pub async fn handle(mut req: Request, env: Env, _ctx: Context) -> Result<Respons
         return Response::error("Method Not Allowed", 405);
     }
 
-    if !crate::auth::is_authorized(&req, &env).await? {
+    if !crate::auth::is_authorized(&req, &env)? {
         return Response::error("Unauthorized", 401);
     }
 

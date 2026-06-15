@@ -1,9 +1,8 @@
 use worker::{Env, Request, Result};
 
-const KV_BINDING: &str = "rhodium_auth_kv";
-const KV_KEY: &str = "api_key";
+const SECRET_BINDING: &str = "RHODIUM_API_KEY";
 
-pub async fn is_authorized(req: &Request, env: &Env) -> Result<bool> {
+pub fn is_authorized(req: &Request, env: &Env) -> Result<bool> {
     let Some(header) = req.headers().get("Authorization")? else {
         return Ok(false);
     };
@@ -17,10 +16,7 @@ pub async fn is_authorized(req: &Request, env: &Env) -> Result<bool> {
         return Ok(false);
     }
 
-    let stored = env.kv(KV_BINDING)?.get(KV_KEY).text().await?;
-    let Some(stored) = stored else {
-        return Ok(false);
-    };
+    let stored = env.secret(SECRET_BINDING)?.to_string();
 
     Ok(constant_time_eq(token.as_bytes(), stored.as_bytes()))
 }
