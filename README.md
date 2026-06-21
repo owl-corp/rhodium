@@ -46,7 +46,7 @@ For JSON payloads, unknown keys are ignored and only `url` is used.
 ```
 
 - `error`: human-readable error message
-- `extra`: optional map for additional error context; omitted when empty
+- `extra`: optional map for additional error context; always returned as a map (empty if no context provided)
 
 **Python example**
 
