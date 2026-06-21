@@ -1,6 +1,7 @@
 {
   "name": "rhodium",
   "private": true,
+  "description": "See the CI/CD section in README.md for why this file exists in a Rust project.",
   "devDependencies": {
     "wrangler": "^4.103.0"
   }
