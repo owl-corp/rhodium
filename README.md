@@ -87,7 +87,7 @@ API_KEY = "your-api-key"
 
 
 def hamming_distance(a: int, b: int) -> int:
-    return bin(a ^ b).count("1")
+    return (a ^ b).bit_count()
 
 
 def is_similar(hash_a: int, hash_b: int, max_distance: int = 3) -> bool:
