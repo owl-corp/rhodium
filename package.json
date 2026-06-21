@@ -1,4 +1,7 @@
 {
   "name": "rhodium",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^4.103.0"
+  }
 }
