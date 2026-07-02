@@ -13,7 +13,7 @@ pub struct ErrorResponse {
 #[allow(clippy::ref_option)]
 fn serialize_extra<S>(
     extra: &Option<HashMap<String, Value>>,
-    serializer: S
+    serializer: S,
 ) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,

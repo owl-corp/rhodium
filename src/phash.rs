@@ -1,7 +1,20 @@
 use std::io::Cursor;
 
-use image::{DynamicImage, ImageReader};
+use image::{DynamicImage, ImageFormat, ImageReader};
 use image_hasher::{HashAlg, HasherConfig};
+
+pub fn validate_supported_image(bytes: &[u8]) -> Result<(), &'static str> {
+    let format = image::guess_format(bytes).map_err(|_| "Unsupported image format")?;
+
+    if matches!(
+        format,
+        ImageFormat::Jpeg | ImageFormat::Png | ImageFormat::WebP
+    ) {
+        Ok(())
+    } else {
+        Err("Unsupported image format")
+    }
+}
 
 pub fn decode_image(bytes: &[u8]) -> Option<DynamicImage> {
     ImageReader::new(Cursor::new(bytes))

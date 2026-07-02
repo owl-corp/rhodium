@@ -27,7 +27,20 @@ pub async fn handle(mut req: Request, env: Env, _ctx: Context) -> Result<Respons
     }
 
     let bytes = fetch_image_bytes(&url).await?;
-    let (hex, signed) = compute_phash(&bytes)?;
+    let (hex, signed) = match compute_phash(&bytes) {
+        Ok(result) => result,
+        Err(err) => {
+            let message = err.to_string();
+
+            if message.contains("Unsupported image format")
+                || message.contains("Failed to decode image")
+            {
+                return json_error(400, &format!("Bad Request: {message}"));
+            }
+
+            return Err(err);
+        }
+    };
     let response = crate::models::HashResponse { hex, i64: signed };
 
     Response::from_json(&response)
@@ -88,6 +101,9 @@ async fn fetch_image_bytes(url: &str) -> Result<Vec<u8>> {
 }
 
 fn compute_phash(bytes: &[u8]) -> Result<(String, i64)> {
+    crate::phash::validate_supported_image(bytes)
+        .map_err(|err| worker::Error::RustError(err.into()))?;
+
     let img = crate::phash::decode_image(bytes)
         .ok_or_else(|| worker::Error::RustError("Failed to decode image".into()))?;
 
