@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use image::{DynamicImage, ImageFormat, ImageReader};
+use image::{AnimationDecoder, DynamicImage, ImageFormat, ImageReader};
 use image_hasher::{HashAlg, HasherConfig};
 
 pub fn validate_supported_image(bytes: &[u8]) -> Result<(), &'static str> {
@@ -8,7 +8,7 @@ pub fn validate_supported_image(bytes: &[u8]) -> Result<(), &'static str> {
 
     if matches!(
         format,
-        ImageFormat::Jpeg | ImageFormat::Png | ImageFormat::WebP
+        ImageFormat::Gif | ImageFormat::Jpeg | ImageFormat::Png | ImageFormat::WebP
     ) {
         Ok(())
     } else {
@@ -17,6 +17,14 @@ pub fn validate_supported_image(bytes: &[u8]) -> Result<(), &'static str> {
 }
 
 pub fn decode_image(bytes: &[u8]) -> Option<DynamicImage> {
+    let format = image::guess_format(bytes).ok()?;
+
+    if format == ImageFormat::Gif {
+        let decoder = image::codecs::gif::GifDecoder::new(Cursor::new(bytes)).ok()?;
+        let first_frame = decoder.into_frames().next()?.ok()?;
+        return Some(DynamicImage::ImageRgba8(first_frame.into_buffer()));
+    }
+
     ImageReader::new(Cursor::new(bytes))
         .with_guessed_format()
         .ok()?

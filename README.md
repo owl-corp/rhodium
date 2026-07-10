@@ -4,6 +4,8 @@ Rhodium is a rare, noble metal. Best known for its role in [photographic film pr
 
 A Cloudflare Worker that accepts an image URL and returns a [perceptual hash](https://en.wikipedia.org/wiki/Perceptual_hashing) of the image, useful for near-duplicate detection.
 
+Supported image formats: JPEG, PNG, WebP, and GIF (GIF hashes are computed from the first frame).
+
 ## CI/CD
 
 This repo is configured to be built in Cloudflare's infrastructure on push to main.
